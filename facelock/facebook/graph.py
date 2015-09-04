@@ -48,14 +48,16 @@ class Graph(object):
     return self._graph.request('oauth/device', post_args=args)
 
   def photos(self):
+    FIELDS = 'images,tags,width,height'
+
     id = self.fb_id
-    photos = self._graph.get_connections('me', 'photos', fields='images,tags')
+    photos = self._graph.get_connections('me', 'photos', fields=FIELDS)
     after = True
     while after:
       for photo in photos['data']:
         yield Photo(photo, id)
       after = photos['paging']['cursors'].get('after')
-      photos = self._graph.get_connections('me', 'photos', fields='images,tags', after=after)
+      photos = self._graph.get_connections('me', 'photos', fields=FIELDS, after=after)
     raise StopIteration
 
 
