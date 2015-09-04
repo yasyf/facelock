@@ -1,8 +1,28 @@
 from ..cv.photo import Photo as CVPhoto
 
+class PhotoCollection(object):
+  def __init__(self, generator):
+    self.generator = generator
+
+  def __iter__(self):
+    return self
+
+  def next(self):
+    return next(self.generator)
+
+  def save_n(self, n, path, **format_args):
+    path = path.format(**format_args)
+    for i in range(n):
+      try:
+        photo = next(self)
+      except StopIteration:
+        break
+      photo.to_cv().save('{path}/{id}.png'.format(path=path, id=photo.id))
+
 class Photo(object):
   def __init__(self, photo_data, user_id=None):
     self.url = photo_data['images'][0]['source']
+    self.id = photo_data['id']
     self.width = float(photo_data['width'])
     self.height = float(photo_data['height'])
     self.tag = None

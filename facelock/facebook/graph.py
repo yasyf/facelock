@@ -1,6 +1,6 @@
 from secrets import Secrets
 from auth_code import AuthCode
-from photo import Photo
+from photo import Photo, PhotoCollection
 from ..stores.redis_store import RedisStore
 import facebook
 
@@ -47,8 +47,8 @@ class Graph(object):
     }
     return self._graph.request('oauth/device', post_args=args)
 
-  def photos(self):
-    FIELDS = 'images,tags,width,height'
+  def _photos(self):
+    FIELDS = 'id,images,tags,width,height'
 
     id = self.fb_id
     photos = self._graph.get_connections('me', 'photos', fields=FIELDS)
@@ -59,6 +59,9 @@ class Graph(object):
       after = photos['paging']['cursors'].get('after')
       photos = self._graph.get_connections('me', 'photos', fields=FIELDS, after=after)
     raise StopIteration
+
+  def photos(self):
+    return PhotoCollection(self._photos())
 
 
 

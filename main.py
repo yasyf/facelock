@@ -1,7 +1,8 @@
 from facelock.facebook.graph import Graph
 
+USER_ID = 'YasyfM'
+
 if __name__ == '__main__':
-  graph = Graph.for_user('YasyfM')
+  graph = Graph.for_user(USER_ID)
   photos = graph.photos()
-  for i in range(100):
-    next(photos).to_cv().save('tmp/YasyfM/{i}.png'.format(i=i))
+  photos.save_n(100, 'tmp/{user_id}', user_id=USER_ID)
