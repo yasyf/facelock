@@ -23,7 +23,7 @@ class Photo(object):
       return float(self.tag['y'])
 
   def _crop_to_tag(self, photo):
-    PHOTO_PERCENT = 0.2
+    PHOTO_PERCENT = 0.25
 
     bounding_box_center_x = (self.tag_x / 100) * photo.width
     bounding_box_center_y = (self.tag_y / 100) * photo.height

@@ -4,8 +4,8 @@ import numpy as np
 from ..config import Config
 
 class Photo(object):
-  CLASSIFIER_FILE = 'haarcascade_frontalface_alt.xml'
-  face_classifier = cv2.CascadeClassifier(Config.check_filename(CLASSIFIER_FILE))
+  CLASSIFIER_FILES = ['haarcascade_frontalface_alt.xml', 'haarcascade_frontalface_default.xml']
+  face_classifiers = map(lambda fn: cv2.CascadeClassifier(Config.check_filename(fn)), CLASSIFIER_FILES)
 
   def __init__(self, image):
     self.image = image
@@ -25,17 +25,12 @@ class Photo(object):
     """
     :return: (x, y, width, height)
     """
-    faces = self.face_classifier.detectMultiScale(
-      self.image,
-      scaleFactor=1.3,
-      minNeighbors=4,
-      minSize=(30, 30),
-      flags=cv2.CASCADE_SCALE_IMAGE
-    )
-    if multi:
-      return faces
-    if len(faces) == 1:
-      return faces[0]
+    for classifier in self.face_classifiers:
+      faces = classifier.detectMultiScale(self.image, scaleFactor=1.3, minNeighbors=5, minSize=(75, 75))
+      if multi and len(faces) > 0:
+        return faces
+      elif len(faces) == 1:
+        return faces[0]
 
   def save(self, path):
     cv2.imwrite(path, self.image)
