@@ -2,14 +2,15 @@ from facelock.facebook.graph import Graph
 from facelock.train.trainer import Trainer
 from facelock.config import Config
 from facelock.cv.photo import Photo
+from facelock.helpers.dirs import mkdir_p
 import os
 import re
 import cv2
 import sys
 
 OUTPUT_DIR = 'tmp'
-USER_ID = 'YasyfM'
-N = 10
+USER_ID = 'jess.li.90'
+N = 100
 NEGATIVE_SAMPLE_FOLDER = 'yalefaces'
 NEGATIVE_SAMPLE_REGEX = '\.png'
 MODEL_NAME = 'model.xml'
@@ -28,11 +29,13 @@ def negative_samples():
 
 def capture_image():
   capture = cv2.VideoCapture(0)
-  _, frame = capture.read()
-  capture.release()
-
-  image = Photo(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY))
-  return Trainer.process(image)
+  while True:
+    _, frame = capture.read()
+    image = Photo(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY))
+    processed = Trainer.process(image)
+    if processed is not None:
+      capture.release()
+      return processed
 
 if __name__ == '__main__':
   if len(sys.argv) != 2:
@@ -48,13 +51,16 @@ if __name__ == '__main__':
   elif sys.argv[1] == '--train':
     trainer = Trainer(photos.limit(N).call('to_cv'), negative_samples())
     model = trainer.train()
-    model.save('{out}/{model}'.format(out=OUTPUT_DIR, model=MODEL_NAME))
+    path = '{out}/model/{user_id}/{model}'.format(out=OUTPUT_DIR, user_id=USER_ID, model=MODEL_NAME)
+    mkdir_p(path)
+    model.save(path)
   elif sys.argv[1] == '--predict':
-    model = Trainer.load('{out}/{model}'.format(out=OUTPUT_DIR, model=MODEL_NAME))
+    model = Trainer.load('{out}/model/{user_id}/{model}'.format(out=OUTPUT_DIR, user_id=USER_ID, model=MODEL_NAME))
     image = capture_image()
     if image is None:
       raise RuntimeError('No face detected!')
     else:
       label, confidence = model.predict(image.raw())
-      print 'Predicted {label} with confidence of {confidence}!'.format(label=bool(label), confidence=confidence)
+      print 'Predicted {boolean} ({label}) with confidence of {confidence}!'.format(boolean=bool(label),
+                                                                                    label=label, confidence=confidence)
       image.show()

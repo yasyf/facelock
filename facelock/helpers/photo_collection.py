@@ -1,5 +1,6 @@
 import functools
 import os
+from ..helpers.dirs import mkdir_p
 
 class PhotoCollection(object):
   def __init__(self, generator):
@@ -22,8 +23,7 @@ class PhotoCollection(object):
 
   def save_n(self, n, path, **format_args):
     path = path.format(**format_args)
-    if not os.path.exists(path):
-      os.makedirs(path)
+    mkdir_p(path + os.pathsep)
     for i in range(n):
       try:
         photo = next(self)
