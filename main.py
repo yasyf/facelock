@@ -19,8 +19,9 @@ def save_preprocessed(photos):
 def negative_samples():
   for sample_folder in Config.NEGATIVE_SAMPLE_FOLDERS:
     for root, _, files in os.walk(Config.check_filename(sample_folder)):
-      for fn in fnmatch.filter(files, Config.NEGATIVE_SAMPLE_PATTERN):
-        yield Photo.from_path(os.path.join(root, fn))
+      for pattern in Config.NEGATIVE_SAMPLE_PATTERNS:
+        for fn in fnmatch.filter(files, pattern):
+          yield Photo.from_path(os.path.join(root, fn))
   for user in Config.ALL_USERS:
     if user != Config.USER_ID:
       for photo in Graph.for_user(user).photos().limit(Config.NEGATIVE_N):
@@ -53,7 +54,7 @@ if __name__ == '__main__':
     model = trainer.train()
     path = '{out}/model/{user_id}/{model}'.format(out=Config.OUTPUT_DIR,
                                                   user_id=Config.USER_ID, model=Config.MODEL_NAME)
-    mkdir_p(path)
+    mkdir_p(os.path.dirname(path))
     model.save(path)
   elif sys.argv[1] == '--predict':
     model = Model.load('{out}/model/{user_id}/{model}'.format(out=Config.OUTPUT_DIR,
