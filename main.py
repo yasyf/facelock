@@ -11,24 +11,31 @@ import fnmatch
 
 OUTPUT_DIR = 'tmp'
 USER_ID = 'YasyfM'
-N = 150
-THRESHOLD = 6000
+ALL_USERS = ['YasyfM', 'rumyasr', 'jess.li.90']
+POSITIVE_N = 100
+NEGATIVE_N = 50
+THRESHOLD = 3000
 NEGATIVE_SAMPLE_FOLDERS = ['yalefaces', 'orl_faces']
 NEGATIVE_SAMPLE_PATTERN = '*.png'
 MODEL_NAME = 'model.xml'
 
 def save_raw(photos):
-  photos.save_n(N, '{out}/raw/{user_id}', out=OUTPUT_DIR, user_id=USER_ID)
+  photos.save_n(POSITIVE_N, '{out}/raw/{user_id}', out=OUTPUT_DIR, user_id=USER_ID)
 
 def save_preprocessed(photos):
   processed = Trainer(photos.call('to_cv')).processed_positives()
-  processed.save_n(N, '{out}/preprocessed/{user_id}', out=OUTPUT_DIR, user_id=USER_ID)
+  processed.save_n(POSITIVE_N, '{out}/preprocessed/{user_id}', out=OUTPUT_DIR, user_id=USER_ID)
 
 def negative_samples():
   for sample_folder in NEGATIVE_SAMPLE_FOLDERS:
     for root, _, files in os.walk(Config.check_filename(sample_folder)):
       for fn in fnmatch.filter(files, NEGATIVE_SAMPLE_PATTERN):
         yield Photo.from_path(os.path.join(root, fn))
+  for user in ALL_USERS:
+    if user != USER_ID:
+      for photo in Graph.for_user(user).photos().limit(NEGATIVE_N):
+        yield photo.to_cv()
+  raise StopIteration
 
 def capture_image():
   capture = cv2.VideoCapture(0)
@@ -52,7 +59,7 @@ if __name__ == '__main__':
   elif sys.argv[1] == '--save-processed':
     save_preprocessed(photos)
   elif sys.argv[1] == '--train':
-    trainer = Trainer(photos.limit(N).call('to_cv'), negative_samples())
+    trainer = Trainer(photos.limit(POSITIVE_N).call('to_cv'), negative_samples())
     model = trainer.train()
     path = '{out}/model/{user_id}/{model}'.format(out=OUTPUT_DIR, user_id=USER_ID, model=MODEL_NAME)
     mkdir_p(path)
