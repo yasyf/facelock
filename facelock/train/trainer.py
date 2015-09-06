@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from ..helpers.photo_collection import photo_collection
+from .model import Model, TrainingLabel
 
 class Trainer(object):
   FACE_WIDTH = 120.0
@@ -46,18 +47,12 @@ class Trainer(object):
     positives, negatives = self.processed_positives(), self.processed_negatives()
 
     faces.extend(positives.call('raw'))
-    labels.extend([1] * len(faces))
+    labels.extend([TrainingLabel.POSITIVE] * len(faces))
 
     faces.extend(negatives.call('raw'))
-    labels.extend([0] * (len(faces) - len(labels)))
+    labels.extend([TrainingLabel.NEGATIVE] * (len(faces) - len(labels)))
 
     model = cv2.createEigenFaceRecognizer()
     model.train(np.asarray(faces), np.asarray(labels))
 
-    return model
-
-  @staticmethod
-  def load(path):
-    model = cv2.createEigenFaceRecognizer()
-    model.load(path)
-    return model
+    return Model(model)

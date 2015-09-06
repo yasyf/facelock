@@ -1,5 +1,6 @@
 from facelock.facebook.graph import Graph
 from facelock.train.trainer import Trainer
+from facelock.train.model import Model
 from facelock.config import Config
 from facelock.cv.photo import Photo
 from facelock.helpers.dirs import mkdir_p
@@ -10,9 +11,10 @@ import fnmatch
 
 OUTPUT_DIR = 'tmp'
 USER_ID = 'YasyfM'
-N = 20
-NEGATIVE_SAMPLE_FOLDER = 'orl_faces'
-NEGATIVE_SAMPLE_PATTERN= '*.pgm'
+N = 150
+THRESHOLD = 6000
+NEGATIVE_SAMPLE_FOLDERS = ['yalefaces', 'orl_faces']
+NEGATIVE_SAMPLE_PATTERN = '*.png'
 MODEL_NAME = 'model.xml'
 
 def save_raw(photos):
@@ -23,9 +25,10 @@ def save_preprocessed(photos):
   processed.save_n(N, '{out}/preprocessed/{user_id}', out=OUTPUT_DIR, user_id=USER_ID)
 
 def negative_samples():
-  for root, _, files in os.walk(Config.check_filename(NEGATIVE_SAMPLE_FOLDER)):
-    for fn in fnmatch.filter(files, NEGATIVE_SAMPLE_PATTERN):
-      yield Photo.from_path(os.path.join(root, fn))
+  for sample_folder in NEGATIVE_SAMPLE_FOLDERS:
+    for root, _, files in os.walk(Config.check_filename(sample_folder)):
+      for fn in fnmatch.filter(files, NEGATIVE_SAMPLE_PATTERN):
+        yield Photo.from_path(os.path.join(root, fn))
 
 def capture_image():
   capture = cv2.VideoCapture(0)
@@ -55,12 +58,12 @@ if __name__ == '__main__':
     mkdir_p(path)
     model.save(path)
   elif sys.argv[1] == '--predict':
-    model = Trainer.load('{out}/model/{user_id}/{model}'.format(out=OUTPUT_DIR, user_id=USER_ID, model=MODEL_NAME))
+    model = Model.load('{out}/model/{user_id}/{model}'.format(out=OUTPUT_DIR, user_id=USER_ID, model=MODEL_NAME))
+    model.threshold = THRESHOLD
     image = capture_image()
     if image is None:
       raise RuntimeError('No face detected!')
     else:
-      label, confidence = model.predict(image.raw())
-      print 'Predicted {boolean} ({label}) with confidence of {confidence}!'.format(boolean=bool(label),
-                                                                                    label=label, confidence=confidence)
+      label, confidence = model.predict(image)
+      print 'Predicted {label} with confidence of {confidence}!'.format(label=label.name, confidence=confidence)
       image.show()
