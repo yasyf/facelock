@@ -4,12 +4,21 @@ import os
 class PhotoCollection(object):
   def __init__(self, generator):
     self.generator = generator
+    self._limit = None
+    self.count = 0
 
   def __iter__(self):
     return self
 
   def next(self):
+    self.count += 1
+    if self._limit and self.count > self._limit:
+      raise StopIteration
     return next(self.generator)
+
+  def limit(self, i):
+    self._limit = int(i)
+    return self
 
   def save_n(self, n, path, **format_args):
     path = path.format(**format_args)

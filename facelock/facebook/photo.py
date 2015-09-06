@@ -8,7 +8,7 @@ class Photo(object):
     self.height = float(photo_data['height'])
     self.tag = None
     if user_id:
-      tags = filter(lambda t: t['id'] == user_id, photo_data['tags']['data'])
+      tags = filter(lambda t: t.get('id') == user_id, photo_data['tags']['data'])
       if tags:
         self.tag = tags[0]
 

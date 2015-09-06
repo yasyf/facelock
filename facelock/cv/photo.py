@@ -32,12 +32,18 @@ class Photo(object):
       elif len(faces) == 1:
         return faces[0]
 
+  def resize(self, width, height):
+    return self.__class__(cv2.resize(self.image, (int(width), int(height)), interpolation=cv2.INTER_LANCZOS4))
+
   def save(self, path):
     cv2.imwrite(path, self.image)
 
   def show(self):
     cv2.imshow('Photo', self.image)
     cv2.waitKey(0)
+
+  def raw(self):
+    return self.image
 
   @classmethod
   def from_url(cls, url):
