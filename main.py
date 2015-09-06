@@ -4,15 +4,15 @@ from facelock.config import Config
 from facelock.cv.photo import Photo
 from facelock.helpers.dirs import mkdir_p
 import os
-import re
 import cv2
 import sys
+import fnmatch
 
 OUTPUT_DIR = 'tmp'
-USER_ID = 'jess.li.90'
-N = 100
-NEGATIVE_SAMPLE_FOLDER = 'yalefaces'
-NEGATIVE_SAMPLE_REGEX = '\.png'
+USER_ID = 'YasyfM'
+N = 20
+NEGATIVE_SAMPLE_FOLDER = 'orl_faces'
+NEGATIVE_SAMPLE_PATTERN= '*.pgm'
 MODEL_NAME = 'model.xml'
 
 def save_raw(photos):
@@ -23,9 +23,9 @@ def save_preprocessed(photos):
   processed.save_n(N, '{out}/preprocessed/{user_id}', out=OUTPUT_DIR, user_id=USER_ID)
 
 def negative_samples():
-  directory = Config.check_filename(NEGATIVE_SAMPLE_FOLDER)
-  files = os.listdir(directory)
-  return (Photo.from_path(os.path.join(directory, fn)) for fn in files if re.search(NEGATIVE_SAMPLE_REGEX, fn))
+  for root, _, files in os.walk(Config.check_filename(NEGATIVE_SAMPLE_FOLDER)):
+    for fn in fnmatch.filter(files, NEGATIVE_SAMPLE_PATTERN):
+      yield Photo.from_path(os.path.join(root, fn))
 
 def capture_image():
   capture = cv2.VideoCapture(0)
