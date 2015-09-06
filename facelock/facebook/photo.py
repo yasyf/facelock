@@ -1,4 +1,5 @@
 from ..cv.photo import Photo as CVPhoto
+from ..config import Config
 
 class Photo(object):
   def __init__(self, photo_data, user_id=None):
@@ -23,16 +24,14 @@ class Photo(object):
       return float(self.tag['y'])
 
   def _crop_to_tag(self, photo):
-    PHOTO_PERCENT = 0.10
-
     bounding_box_center_x = (self.tag_x / 100) * photo.width
     bounding_box_center_y = (self.tag_y / 100) * photo.height
 
-    x1 = max(bounding_box_center_x - (PHOTO_PERCENT * photo.width), 0)
-    y1 = max(bounding_box_center_y - (PHOTO_PERCENT * photo.height), 0)
+    x1 = max(bounding_box_center_x - (Config.PHOTO_PERCENT * photo.width), 0)
+    y1 = max(bounding_box_center_y - (Config.PHOTO_PERCENT * photo.height), 0)
 
-    x2 = min(bounding_box_center_x + (PHOTO_PERCENT * photo.width), photo.width)
-    y2 = min(bounding_box_center_y + (PHOTO_PERCENT * photo.height), photo.height)
+    x2 = min(bounding_box_center_x + (Config.PHOTO_PERCENT * photo.width), photo.width)
+    y2 = min(bounding_box_center_y + (Config.PHOTO_PERCENT * photo.height), photo.height)
 
     return photo.crop(x1, x2, y1, y2)
 

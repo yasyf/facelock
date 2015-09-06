@@ -2,11 +2,9 @@ import cv2
 import numpy as np
 from ..helpers.photo_collection import photo_collection
 from .model import Model, TrainingLabel
+from ..config import Config
 
 class Trainer(object):
-  FACE_WIDTH = 120.0
-  FACE_HEIGHT = 140.0
-
   def __init__(self, positives=(), negatives=()):
     self.positives = positives
     self.negatives = negatives
@@ -14,7 +12,7 @@ class Trainer(object):
   @classmethod
   def crop_to_face(cls, photo, face):
     (x, y, width, height) = face
-    crop_height = (width / cls.FACE_WIDTH) * cls.FACE_HEIGHT
+    crop_height = (width / Config.FACE_WIDTH) * Config.FACE_HEIGHT
     middle = y + (height / 2)
     y1 = max(0, middle - (crop_height / 2))
     y2 = min(photo.height - 1, middle + (crop_height / 2))
@@ -25,7 +23,7 @@ class Trainer(object):
     face = photo.detect_face()
     if face is None:
       return None
-    return cls.crop_to_face(photo, face).resize(cls.FACE_WIDTH, cls.FACE_HEIGHT)
+    return cls.crop_to_face(photo, face).resize(Config.FACE_WIDTH, Config.FACE_HEIGHT)
 
   @photo_collection
   def processed_positives(self):
@@ -40,7 +38,7 @@ class Trainer(object):
 
   @photo_collection
   def processed_negatives(self):
-    return (neg.resize(self.FACE_WIDTH, self.FACE_HEIGHT) for neg in self.negatives)
+    return (neg.resize(Config.FACE_WIDTH, Config.FACE_HEIGHT) for neg in self.negatives)
 
   def train(self):
     faces, labels = [], []

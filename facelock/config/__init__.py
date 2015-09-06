@@ -5,14 +5,24 @@ class ConfigError(Exception):
 
 class Config(object):
   OUTPUT_DIR = 'tmp'
+  MODEL_NAME = 'model.xml'
+
   USER_ID = 'YasyfM'
   ALL_USERS = ['YasyfM', 'rumyasr', 'jess.li.90']
-  POSITIVE_N = 100
-  NEGATIVE_N = 50
-  THRESHOLD = 3000
-  NEGATIVE_SAMPLE_FOLDERS = ['yalefaces', 'orl_faces']
+
+  NEGATIVE_SAMPLE_FOLDERS = ['orl_faces', 'yalefaces']
   NEGATIVE_SAMPLE_PATTERN = '*.png'
-  MODEL_NAME = 'model.xml'
+
+  POSITIVE_N = 100
+  NEGATIVE_N = 20
+  THRESHOLD = 3500
+
+  PHOTO_PERCENT = 0.15
+
+  FACE_WIDTH = 92.0
+  FACE_HEIGHT = 112.0
+
+  CLASSIFIER_FILES = ['haarcascade_frontalface_alt.xml', 'haarcascade_frontalface_default.xml']
 
   @classmethod
   def get(cls, key):

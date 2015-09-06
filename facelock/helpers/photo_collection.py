@@ -23,7 +23,7 @@ class PhotoCollection(object):
 
   def save_n(self, n, path, **format_args):
     path = path.format(**format_args)
-    mkdir_p(path + os.pathsep)
+    mkdir_p(os.path.join(path, 'null.png'))
     for i in range(n):
       try:
         photo = next(self)

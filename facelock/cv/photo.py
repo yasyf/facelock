@@ -4,8 +4,7 @@ import numpy as np
 from ..config import Config
 
 class Photo(object):
-  CLASSIFIER_FILES = ['haarcascade_frontalface_alt.xml', 'haarcascade_frontalface_default.xml']
-  face_classifiers = map(lambda fn: cv2.CascadeClassifier(Config.check_filename(fn)), CLASSIFIER_FILES)
+  face_classifiers = map(lambda fn: cv2.CascadeClassifier(Config.check_filename(fn)), Config.CLASSIFIER_FILES)
 
   def __init__(self, image):
     self.image = image
