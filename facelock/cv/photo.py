@@ -31,6 +31,9 @@ class Photo(object):
       elif len(faces) == 1:
         return faces[0]
 
+  def equalize(self):
+    return self.__class__(cv2.equalizeHist(self.image))
+
   def resize(self, width, height):
     return self.__class__(cv2.resize(self.image, (int(width), int(height)), interpolation=cv2.INTER_LANCZOS4))
 

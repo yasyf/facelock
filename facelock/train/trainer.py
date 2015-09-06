@@ -4,9 +4,12 @@ from .model import Model, TrainingLabel
 from ..config import Config
 
 class Trainer(object):
-  def __init__(self, positives=(), negatives=()):
+  def __init__(self, positives=(), negatives=(), stock_negatives=(), positive_limit=None, negative_limit=None):
     self.positives = positives
+    self.stock_negatives = stock_negatives
     self.negatives = negatives
+    self.positive_limit = positive_limit
+    self.negative_limit = negative_limit
     self.preprocess = True
 
   @classmethod
@@ -23,9 +26,10 @@ class Trainer(object):
     face = photo.detect_face()
     if face is None:
       return None
-    return cls.crop_to_face(photo, face).resize(Config.FACE_WIDTH, Config.FACE_HEIGHT)
+    return cls.crop_to_face(photo, face).resize(Config.FACE_WIDTH, Config.FACE_HEIGHT).equalize()
 
-  def processed(self, photos):
+  def processed(self, photos, limit=None):
+    count = 0
     for photo in photos:
       if self.preprocess:
         processed = self.process(photo)
@@ -35,16 +39,24 @@ class Trainer(object):
         # Skip if no or multiple faces
         continue
       else:
-        yield processed
+        count += 1
+        if limit and count > limit:
+          raise StopIteration
+        else:
+          yield processed
     raise StopIteration
 
   @photo_collection
   def processed_positives(self):
-    return self.processed(self.positives)
+    return self.processed(self.positives, self.positive_limit)
+
+  @photo_collection
+  def processed_stock_negatives(self):
+    return self.processed(self.stock_negatives)
 
   @photo_collection
   def processed_negatives(self):
-    return self.processed(self.negatives)
+    return self.processed(self.negatives, self.negative_limit)
 
   def train(self):
     faces, labels = [], []
@@ -59,6 +71,10 @@ class Trainer(object):
       faces.append(negative.raw())
       labels.append(TrainingLabel.NEGATIVE)
       negatives.append(negative)
+
+    for negative in self.processed_stock_negatives():
+      faces.append(negative.raw())
+      labels.append(TrainingLabel.NEGATIVE)
 
     model = Model.new_recognizer()
     model.train(np.asarray(faces), np.asarray(labels))

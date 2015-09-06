@@ -13,9 +13,10 @@ class Config(object):
   NEGATIVE_SAMPLE_FOLDERS = ('orl_faces', 'yalefaces')
   NEGATIVE_SAMPLE_PATTERNS = ('*.png', '*.pgm')
 
-  POSITIVE_N = 300  # ~20% will be usable
-  NEGATIVE_N = 50
-  THRESHOLD = 100
+  POSITIVE_N = 100
+  NEGATIVE_N = 10
+  FETCHING_BUFFER = 5
+  THRESHOLD = 50
 
   PHOTO_PERCENT = 0.1
 
