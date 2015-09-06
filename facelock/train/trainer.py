@@ -1,4 +1,3 @@
-import cv2
 import numpy as np
 from ..helpers.photo_collection import photo_collection
 from .model import Model, TrainingLabel
@@ -8,6 +7,7 @@ class Trainer(object):
   def __init__(self, positives=(), negatives=()):
     self.positives = positives
     self.negatives = negatives
+    self.preprocess = True
 
   @classmethod
   def crop_to_face(cls, photo, face):
@@ -25,10 +25,12 @@ class Trainer(object):
       return None
     return cls.crop_to_face(photo, face).resize(Config.FACE_WIDTH, Config.FACE_HEIGHT)
 
-  @photo_collection
-  def processed_positives(self):
-    for photo in self.positives:
-      processed = self.process(photo)
+  def processed(self, photos):
+    for photo in photos:
+      if self.preprocess:
+        processed = self.process(photo)
+      else:
+        processed = photo
       if processed is None:
         # Skip if no or multiple faces
         continue
@@ -37,20 +39,28 @@ class Trainer(object):
     raise StopIteration
 
   @photo_collection
+  def processed_positives(self):
+    return self.processed(self.positives)
+
+  @photo_collection
   def processed_negatives(self):
-    return (neg.resize(Config.FACE_WIDTH, Config.FACE_HEIGHT) for neg in self.negatives)
+    return self.processed(self.negatives)
 
   def train(self):
     faces, labels = [], []
-    positives, negatives = self.processed_positives(), self.processed_negatives()
+    positives, negatives = [], []
 
-    faces.extend(positives.call('raw'))
-    labels.extend([TrainingLabel.POSITIVE] * len(faces))
+    for positive in self.processed_positives():
+      faces.append(positive.raw())
+      labels.append(TrainingLabel.POSITIVE)
+      positives.append(positive)
 
-    faces.extend(negatives.call('raw'))
-    labels.extend([TrainingLabel.NEGATIVE] * (len(faces) - len(labels)))
+    for negative in self.processed_negatives():
+      faces.append(negative.raw())
+      labels.append(TrainingLabel.NEGATIVE)
+      negatives.append(negative)
 
-    model = cv2.createEigenFaceRecognizer()
+    model = Model.new_recognizer()
     model.train(np.asarray(faces), np.asarray(labels))
 
-    return Model(model)
+    return Model(model, positives=positives, negatives=negatives)

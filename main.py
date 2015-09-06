@@ -66,4 +66,11 @@ if __name__ == '__main__':
     else:
       label, confidence = model.predict(image)
       print 'Predicted {label} with confidence of {confidence}!'.format(label=label.name, confidence=confidence)
-      image.show()
+      try:
+        key = chr(image.show()).upper()
+      except ValueError:
+        key = None
+      if key == 'Y':
+        print 'Recorded hit!'
+      elif key == 'N':
+        print 'Recorded miss!'

@@ -1,5 +1,4 @@
 import functools
-import os
 from ..helpers.dirs import mkdir_p
 
 class PhotoCollection(object):

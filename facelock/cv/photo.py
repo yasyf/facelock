@@ -39,7 +39,7 @@ class Photo(object):
 
   def show(self):
     cv2.imshow('Photo', self.image)
-    cv2.waitKey(0)
+    return cv2.waitKey(0)
 
   def raw(self):
     return self.image
