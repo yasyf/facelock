@@ -4,6 +4,16 @@ class ConfigError(Exception):
   pass
 
 class Config(object):
+  OUTPUT_DIR = 'tmp'
+  USER_ID = 'YasyfM'
+  ALL_USERS = ['YasyfM', 'rumyasr', 'jess.li.90']
+  POSITIVE_N = 100
+  NEGATIVE_N = 50
+  THRESHOLD = 3000
+  NEGATIVE_SAMPLE_FOLDERS = ['yalefaces', 'orl_faces']
+  NEGATIVE_SAMPLE_PATTERN = '*.png'
+  MODEL_NAME = 'model.xml'
+
   @classmethod
   def get(cls, key):
     try:
