@@ -18,6 +18,24 @@ An iOS app is used for two-factor authentication. If the phone belonging to the 
 
 The app is also used to collect feedback in order to continuously update the facial recognition model.
 
+### Signup Flow
+
+1. User logs in with Facebook on the iOS App
+2. App sends Facebook access token to server
+3. Server uses access token to determine the user's Facebook ID, and checks whether they are on the whitelist of users
+4. The server then uses the Duo Auth API to determine enrollment status for that user (Facebook ID as username)
+5. If the device is not enrolled, an activation code is returned, and sent back to the device
+6. The iOS App uses the Duo Mobile SDK to activate and enroll the device
+
+### Auth Flow
+
+1. User is recognized by the images streamed to the server
+2. Server uses Duo Auth API to ensure user is enrolled, then creates an authorization request
+3. iOS app receives push, uses Duo Mobile SDK to get transaction info, and presents a notification to the user
+4. iOS app uses Duo Mobile SDK to confirm or reject the authorization
+5. If confirmed, door is unlocked
+6. If rejected, the user is taken to the app, where the photo is presented (for verification and online learning)
+
 ## Hardware
 
 A Raspberry Pi is used to communicate with the server running the above code.
