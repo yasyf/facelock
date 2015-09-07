@@ -23,10 +23,11 @@ class Trainer(object):
 
   @classmethod
   def process(cls, photo):
+    photo = photo.equalize()
     face = photo.detect_face()
     if face is None:
       return None
-    return cls.crop_to_face(photo, face).resize(Config.FACE_WIDTH, Config.FACE_HEIGHT).equalize()
+    return cls.crop_to_face(photo, face).resize(Config.FACE_WIDTH, Config.FACE_HEIGHT)
 
   def processed(self, photos, limit=None):
     count = 0

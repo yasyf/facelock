@@ -14,7 +14,7 @@ class Config(object):
   NEGATIVE_SAMPLE_PATTERNS = ('*.png', '*.pgm')
 
   POSITIVE_N = 100
-  NEGATIVE_N = 10
+  NEGATIVE_N = 1
   FETCHING_BUFFER = 5
   THRESHOLD = 50
 
