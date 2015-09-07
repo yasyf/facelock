@@ -1,4 +1,5 @@
 import numpy as np
+import math
 from ..helpers.photo_collection import photo_collection
 from .model import Model, TrainingLabel
 from ..config import Config
@@ -22,12 +23,26 @@ class Trainer(object):
     return photo.crop(x, x + width, y1, y2)
 
   @classmethod
+  def rotate_around_eyes(cls, photo, left_eye, right_eye):
+    direction = (right_eye[0] - left_eye[0], right_eye[1] - left_eye[1])
+    rotation = -math.atan2(float(direction[1]), float(direction[0]))
+    return photo.rotate(math.degrees(rotation), tuple(left_eye[:2]))
+
+  @classmethod
   def process(cls, photo):
     photo = photo.equalize()
+
     face = photo.detect_face()
     if face is None:
       return None
-    return cls.crop_to_face(photo, face).resize(Config.FACE_WIDTH, Config.FACE_HEIGHT)
+    else:
+      photo = cls.crop_to_face(photo, face)
+
+    eyes = photo.detect_eyes()
+    if eyes is not None:
+      photo = cls.rotate_around_eyes(photo, *eyes)
+
+    return photo.resize(Config.FACE_WIDTH, Config.FACE_HEIGHT)
 
   def processed(self, photos, limit=None):
     count = 0

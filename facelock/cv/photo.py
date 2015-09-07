@@ -5,6 +5,7 @@ from ..config import Config
 
 class Photo(object):
   face_classifiers = map(lambda fn: cv2.CascadeClassifier(Config.check_filename(fn)), Config.CLASSIFIER_FILES)
+  eye_classifier = cv2.CascadeClassifier(Config.check_filename(Config.EYE_CLASSIFIER))
 
   def __init__(self, image):
     self.image = image
@@ -19,6 +20,21 @@ class Photo(object):
 
   def crop(self, x1, x2, y1, y2):
     return self.__class__(self.image[y1:y2, x1:x2])
+
+  def rotate(self, angle, center, scale=1.0):
+    rotation_matrix = cv2.getRotationMatrix2D(center, angle, scale)
+    return self.__class__(cv2.warpAffine(self.image, rotation_matrix, (self.width, self.height)))
+
+  def detect_eyes(self):
+    """
+    :return: (left_eye, right_eye)
+    """
+    eyes = self.eye_classifier.detectMultiScale(self.image)
+    if len(eyes) == 2:
+      if eyes[0][0] < eyes[1][0]:
+        return eyes[0], eyes[1]
+      else:
+        return eyes[1], eyes[0]
 
   def detect_face(self, multi=False):
     """

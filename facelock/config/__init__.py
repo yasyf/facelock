@@ -35,6 +35,7 @@ class Config(object):
 
   # Cascades for face detection
   CLASSIFIER_FILES = ('haarcascade_frontalface_alt.xml', 'haarcascade_frontalface_default.xml')
+  EYE_CLASSIFIER = 'haarcascade_eye_tree_eyeglasses.xml'
 
   @classmethod
   def get(cls, key):
