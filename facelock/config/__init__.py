@@ -4,25 +4,36 @@ class ConfigError(Exception):
   pass
 
 class Config(object):
+  # Persistence
   OUTPUT_DIR = 'tmp'
   MODEL_NAME = 'model.xml'
 
+  # Users
   USER_ID = 'YasyfM'
   ALL_USERS = ('YasyfM', 'rumyasr', 'jess.li.90')
 
+  # Stock negative samples
   NEGATIVE_SAMPLE_FOLDERS = ('orl_faces', 'yalefaces')
   NEGATIVE_SAMPLE_PATTERNS = ('*.png', '*.pgm')
 
+  # Number of images to fetch from Facebook
   POSITIVE_N = 100
   NEGATIVE_N = 1
-  FETCHING_BUFFER = 5
-  THRESHOLD = 50
 
+  # Multiple of N to limit Facebook calls to
+  FETCHING_BUFFER = 5
+
+  # Confidence threshold for positive result
+  THRESHOLD = 100
+
+  # Percentage of photo surrounding Facebook Tag center to keep
   PHOTO_PERCENT = 0.1
 
+  # Dimensions to resize all training images to
   FACE_WIDTH = 120.0
   FACE_HEIGHT = 140.0
 
+  # Cascades for face detection
   CLASSIFIER_FILES = ('haarcascade_frontalface_alt.xml', 'haarcascade_frontalface_default.xml')
 
   @classmethod
