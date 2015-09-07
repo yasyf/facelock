@@ -5,7 +5,6 @@ from facelock.config import Config
 from facelock.cv.photo import Photo
 from facelock.helpers.dirs import mkdir_p
 import os
-import cv2
 import sys
 import fnmatch
 
@@ -34,15 +33,6 @@ def negative_samples():
 def positive_samples(photos):
   return photos.limit(Config.POSITIVE_N * Config.FETCHING_BUFFER).call('to_cv')
 
-def capture_image():
-  capture = cv2.VideoCapture(0)
-  while True:
-    _, frame = capture.read()
-    image = Photo(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY))
-    processed = Trainer.process(image)
-    if processed is not None:
-      capture.release()
-      return processed
 
 if __name__ == '__main__':
   if len(sys.argv) != 2:
@@ -72,12 +62,10 @@ if __name__ == '__main__':
     model = Model.load('{out}/model/{user_id}/{model}'.format(out=Config.OUTPUT_DIR,
                                                               user_id=Config.USER_ID, model=Config.MODEL_NAME))
     model.threshold = Config.THRESHOLD
-    image = capture_image()
-    if image is None:
-      raise RuntimeError('No face detected!')
-    else:
-      label, confidence = model.predict(image)
-      print 'Predicted {label} with confidence of {confidence}!'.format(label=label.name, confidence=confidence)
+    label, confidence, images = model.run_prediction_loop(raise_on_no_face=True)
+    print 'Predicted {label} with confidence of {confidence}!'.format(label=label.name, confidence=confidence)
+
+    for image in images:
       try:
         key = chr(image.show()).upper()
       except ValueError:

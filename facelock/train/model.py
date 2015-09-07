@@ -1,6 +1,8 @@
+import numpy as np
 import cv2
 import os
 from ..helpers.dirs import mkdir_p
+from ..helpers.capture import capture_face
 from enum import IntEnum
 
 class TrainingLabel(IntEnum):
@@ -24,6 +26,36 @@ class Model(object):
         return TrainingLabel.NEGATIVE, -confidence
     else:
       return TrainingLabel.NEGATIVE, confidence
+
+  def run_prediction_loop(self, capture=None, min_positives=3, raise_on_no_face=False):
+    capture_to_use = capture or cv2.VideoCapture(0)
+    images, labels, confidences = [], [], []
+    for i in range(min_positives):
+      image = capture_face(capture_to_use)
+      if image is None:
+        if raise_on_no_face:
+          raise RuntimeError('No face detected!')
+        else:
+          label, confidence = TrainingLabel.UNKNOWN, 0
+      else:
+        images.append(image)
+        label, confidence = self.predict(image)
+
+      labels.append(label)
+      confidences.append(confidence)
+
+    if capture is None:
+      capture_to_use.release()
+
+    if len(set(labels)) == 1:
+      final_label = labels[0]
+      final_confidence = np.mean(confidences)
+    else:
+      final_label = TrainingLabel.UNKNOWN
+      final_confidence = 0
+
+    print labels, confidences
+    return final_label, final_confidence, images
 
   @staticmethod
   def _save_images(images, model_path, name):

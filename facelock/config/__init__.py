@@ -10,7 +10,7 @@ class Config(object):
 
   # Users
   USER_ID = 'YasyfM'
-  ALL_USERS = ('YasyfM', 'rumyasr', 'jess.li.90')
+  ALL_USERS = ('YasyfM', 'rumyasr', 'jess.li.90', 'niki.tubacki')
 
   # Stock negative samples
   NEGATIVE_SAMPLE_FOLDERS = ('orl_faces', 'yalefaces')

@@ -58,7 +58,10 @@ class Graph(object):
     while after:
       for photo in photos['data']:
         yield Photo(photo, id)
-      after = photos['paging']['cursors'].get('after')
+      try:
+        after = photos['paging']['cursors']['after']
+      except KeyError:
+        raise StopIteration
       photos = self._graph.get_connections('me', 'photos', fields=FIELDS, after=after)
     raise StopIteration
 
