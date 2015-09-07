@@ -17,8 +17,8 @@ class Config(object):
   NEGATIVE_SAMPLE_PATTERNS = ('*.png', '*.pgm')
 
   # Number of images to fetch from Facebook
-  POSITIVE_N = 100
-  NEGATIVE_N = 1
+  POSITIVE_N = 150
+  NEGATIVE_N = 5
 
   # Multiple of N to limit Facebook calls to
   FETCHING_BUFFER = 5

@@ -63,6 +63,8 @@ if __name__ == '__main__':
                                                               user_id=Config.USER_ID, model=Config.MODEL_NAME))
     model.threshold = Config.THRESHOLD
     label, confidence, images = model.run_prediction_loop(raise_on_no_face=True)
+
+    print model.last_prediction_data
     print 'Predicted {label} with confidence of {confidence}!'.format(label=label.name, confidence=confidence)
 
     for image in images:

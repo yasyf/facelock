@@ -9,6 +9,16 @@ class TrainingLabel(IntEnum):
   POSITIVE = 1
   NEGATIVE = 0
   UNKNOWN = -1
+  NO_IMAGE = -1
+
+class PredictionData(object):
+  def __init__(self, labels=None, confidences=None, images=None):
+    self.labels = labels or []
+    self.confidences = confidences or []
+    self.images = images or []
+
+  def __str__(self):
+    return str(zip(self.labels, self.confidences))
 
 class Model(object):
   def __init__(self, model, threshold=None, positives=None, negatives=None):
@@ -16,8 +26,9 @@ class Model(object):
     self.threshold = threshold
     self.positives = positives or []
     self.negatives = negatives or []
+    self.last_prediction_data = PredictionData()
 
-  def predict(self, image):
+  def evaulate(self, image):
     label, confidence = self.model.predict(image.raw())
     if label == TrainingLabel.POSITIVE:
       if not self.threshold or confidence > self.threshold:
@@ -26,6 +37,12 @@ class Model(object):
         return TrainingLabel.NEGATIVE, -confidence
     else:
       return TrainingLabel.NEGATIVE, confidence
+
+  def predict(self):
+    label, _, _ = self.run_prediction_loop()
+    if label != TrainingLabel.POSITIVE:
+      return TrainingLabel.NEGATIVE
+    return label
 
   def run_prediction_loop(self, capture=None, min_positives=3, raise_on_no_face=False):
     capture_to_use = capture or cv2.VideoCapture(0)
@@ -36,10 +53,10 @@ class Model(object):
         if raise_on_no_face:
           raise RuntimeError('No face detected!')
         else:
-          label, confidence = TrainingLabel.UNKNOWN, 0
+          label, confidence = TrainingLabel.NO_IMAGE, 0
       else:
         images.append(image)
-        label, confidence = self.predict(image)
+        label, confidence = self.evaulate(image)
 
       labels.append(label)
       confidences.append(confidence)
@@ -54,7 +71,7 @@ class Model(object):
       final_label = TrainingLabel.UNKNOWN
       final_confidence = 0
 
-    print labels, confidences
+    self.last_prediction_data = PredictionData(labels, confidences, images)
     return final_label, final_confidence, images
 
   @staticmethod
