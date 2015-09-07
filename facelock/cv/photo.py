@@ -4,8 +4,11 @@ import numpy as np
 from ..config import Config
 
 class Photo(object):
-  face_classifiers = map(lambda fn: cv2.CascadeClassifier(Config.check_filename(fn)), Config.CLASSIFIER_FILES)
+  face_classifiers = map(lambda fn: cv2.CascadeClassifier(Config.check_filename(fn)), Config.FACE_CLASSIFIERS)
   eye_classifier = cv2.CascadeClassifier(Config.check_filename(Config.EYE_CLASSIFIER))
+  eyepair_classifier = cv2.CascadeClassifier(Config.check_filename(Config.EYEPAIR_CLASSIFIER))
+  left_eye_classifier = cv2.CascadeClassifier(Config.check_filename(Config.LEFT_EYE_CLASSIFIER))
+  right_eye_classifier = cv2.CascadeClassifier(Config.check_filename(Config.RIGHT_EYE_CLASSIFIER))
 
   def __init__(self, image):
     self.image = image
@@ -29,6 +32,17 @@ class Photo(object):
     """
     :return: (left_eye, right_eye)
     """
+
+    # Try to find an eyepair with a left and right eye
+    eyepairs = self.eyepair_classifier.detectMultiScale(self.image)
+    for (x, y, w, h) in reversed(sorted(eyepairs, key=lambda e: e[2] * e[3])):
+      eyepair_roi = self.image[y:y + h, x:x + w]
+      left_eyes = self.left_eye_classifier.detectMultiScale(eyepair_roi)
+      right_eyes = self.right_eye_classifier.detectMultiScale(eyepair_roi)
+      if len(left_eyes) == 1 and len(right_eyes) == 1:
+        return left_eyes[0], right_eyes[0]
+
+    # Fallback to finding a set of eyes, and guess which is left
     eyes = self.eye_classifier.detectMultiScale(self.image)
     if len(eyes) == 2:
       if eyes[0][0] < eyes[1][0]:

@@ -24,17 +24,24 @@ class Config(object):
   FETCHING_BUFFER = 5
 
   # Confidence threshold for positive result
-  THRESHOLD = 100
+  THRESHOLD = 5000
 
   # Percentage of photo surrounding Facebook Tag center to keep
   PHOTO_PERCENT = 0.1
+
+  # Percentage of photo surrounding eyes to keep
+  VERTICAL_EYE_OFFSET = 0.4
+  HORIZONTAL_EYE_OFFSET = 0.3
 
   # Dimensions to resize all training images to
   FACE_WIDTH = 120.0
   FACE_HEIGHT = 140.0
 
   # Cascades for face detection
-  CLASSIFIER_FILES = ('haarcascade_frontalface_alt.xml', 'haarcascade_frontalface_default.xml')
+  FACE_CLASSIFIERS = ('haarcascade_frontalface_alt.xml', 'haarcascade_frontalface_default.xml')
+  EYEPAIR_CLASSIFIER = 'haarcascade_mcs_eyepair_big.xml'
+  LEFT_EYE_CLASSIFIER = 'haarcascade_lefteye_2splits.xml'
+  RIGHT_EYE_CLASSIFIER = 'haarcascade_righteye_2splits.xml'
   EYE_CLASSIFIER = 'haarcascade_eye_tree_eyeglasses.xml'
 
   @classmethod

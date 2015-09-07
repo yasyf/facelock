@@ -46,4 +46,4 @@ class Model(object):
 
   @staticmethod
   def new_recognizer():
-    return cv2.createFisherFaceRecognizer()
+    return cv2.createEigenFaceRecognizer()
