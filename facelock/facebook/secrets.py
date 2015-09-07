@@ -1,6 +1,4 @@
-import os
+from ..helpers.secrets import BaseSecrets
 
-class Secrets(object):
-  @staticmethod
-  def get(key):
-    return os.getenv('FACEBOOK_' + key.upper())
+class Secrets(BaseSecrets):
+  PREFIX = 'FACEBOOK'
