@@ -1,67 +1,45 @@
-from facelock.facebook.graph import Graph
 from facelock.train.trainer import Trainer
 from facelock.train.model import Model
+from facelock.train.model_set import ModelSet
 from facelock.config import Config
-from facelock.cv.photo import Photo
-from facelock.helpers.dirs import mkdir_p
 import os
 import sys
-import fnmatch
 
-def save_raw(photos):
-  photos.save_n(Config.POSITIVE_N, '{out}/raw/{user_id}', out=Config.OUTPUT_DIR, user_id=Config.USER_ID)
+class ArgumentError(Exception):
+  pass
 
-def save_preprocessed(photos):
-  processed = Trainer(photos.call('to_cv')).processed_positives()
-  processed.save_n(Config.POSITIVE_N, '{out}/preprocessed/{user_id}', out=Config.OUTPUT_DIR, user_id=Config.USER_ID)
+def train(user_id):
+  trainer = Trainer.default(user_id)
+  model = trainer.train()
+  model.save()
 
-def stock_negative_samples():
-  for sample_folder in Config.NEGATIVE_SAMPLE_FOLDERS:
-    for root, _, files in os.walk(Config.check_filename(sample_folder)):
-      for pattern in Config.NEGATIVE_SAMPLE_PATTERNS:
-        for fn in fnmatch.filter(files, pattern):
-          yield Photo.from_path(os.path.join(root, fn))
-  raise StopIteration
+def all_models():
+  models = []
+  for user_id in Config.ALL_USERS:
+    path = Model.path_for_user(user_id)
+    if not os.path.exists(path):
+      train(user_id)
+    model = Model.load_for_user(user_id)
+    models.append(model)
+  return models
 
-def negative_samples():
-  for user in Config.ALL_USERS:
-    if user != Config.USER_ID:
-      for photo in Graph.for_user(user).photos().limit(Config.NEGATIVE_N * Config.FETCHING_BUFFER):
-        yield photo.to_cv()
-  raise StopIteration
+def assert_num_args(n):
+  if len(sys.argv) < (n + 2):
+    raise ArgumentError('Incorrect number of arguments!')
 
-def positive_samples(photos):
-  return photos.limit(Config.POSITIVE_N * Config.FETCHING_BUFFER).call('to_cv')
-
+def arg(n):
+  assert_num_args(n)
+  return sys.argv[n + 1]
 
 if __name__ == '__main__':
-  if len(sys.argv) != 2:
-    raise RuntimeError('Incorrect number of arguments!')
-
-  graph = Graph.for_user(Config.USER_ID)
-  photos = graph.photos()
-
-  if sys.argv[1] == '--save-raw':
-    save_raw(photos)
-  elif sys.argv[1] == '--save-processed':
-    save_preprocessed(photos)
-  elif sys.argv[1] == '--train':
-    trainer = Trainer(
-      positives=positive_samples(photos),
-      negatives=negative_samples(),
-      stock_negatives=stock_negative_samples(),
-      positive_limit=Config.POSITIVE_N,
-      negative_limit=Config.NEGATIVE_N
-    )
-    model = trainer.train()
-    path = '{out}/model/{user_id}/{model}'.format(out=Config.OUTPUT_DIR,
-                                                  user_id=Config.USER_ID, model=Config.MODEL_NAME)
-    mkdir_p(os.path.dirname(path))
-    model.save(path)
-  elif sys.argv[1] == '--predict':
-    model = Model.load('{out}/model/{user_id}/{model}'.format(out=Config.OUTPUT_DIR,
-                                                              user_id=Config.USER_ID, model=Config.MODEL_NAME))
-    model.threshold = Config.THRESHOLD
+  if arg(0) == '--train':
+    try:
+      train(arg(1))
+    except ArgumentError:
+      for user_id in Config.ALL_USERS:
+        train(user_id)
+  elif arg(0) == '--predict':
+    model = Model.load_for_user(arg(1))
     label, confidence, images = model.run_prediction_loop(raise_on_no_face=True)
 
     print model.last_prediction_data
@@ -76,3 +54,8 @@ if __name__ == '__main__':
         print 'Recorded hit!'
       elif key == 'N':
         print 'Recorded miss!'
+  elif arg(0) == '--identify':
+    best_guess, confidence = ModelSet(all_models()).predict()
+    if not best_guess:
+      raise RuntimeError('No user could be identified!')
+    print 'User is {user_id} with confidence {confidence}!'.format(user_id=best_guess, confidence=confidence)

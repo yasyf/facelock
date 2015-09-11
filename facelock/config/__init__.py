@@ -9,8 +9,7 @@ class Config(object):
   MODEL_NAME = 'model.xml'
 
   # Users
-  USER_ID = 'YasyfM'
-  ALL_USERS = ('YasyfM', 'rumyasr', 'jess.li.90', 'niki.tubacki')
+  ALL_USERS = ('YasyfM', 'rumyasr', 'jess.li.90', 'niki.tubacki', 'kiran.wattamwar')
 
   # Stock negative samples
   NEGATIVE_SAMPLE_FOLDERS = ('orl_faces', 'yalefaces')
@@ -18,13 +17,13 @@ class Config(object):
 
   # Number of images to fetch from Facebook
   POSITIVE_N = 150
-  NEGATIVE_N = 5
+  NEGATIVE_N = 1
 
   # Multiple of N to limit Facebook calls to
   FETCHING_BUFFER = 5
 
   # Confidence threshold for positive result
-  THRESHOLD = 5000
+  THRESHOLD = 7500
 
   # Percentage of photo surrounding Facebook Tag center to keep
   PHOTO_PERCENT = 0.1
